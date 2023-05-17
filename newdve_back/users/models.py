@@ -1,27 +1,70 @@
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField, EmailField
 from django.urls import reverse
+from django.db import models
 from django.utils.translation import gettext_lazy as _
+from newdve_back.announces.models import Announce, Tag
 
 from newdve_back.users.managers import UserManager
 
+class Addres(models.Model):
+    state = models.CharField(max_length=2)
+    city = models.CharField(max_length=50)
+    district = models.CharField(max_length=255, blank=True)
+    street = models.CharField(max_length=255)
+    number = models.CharField(max_length=10, blank=True)
+    cep = models.CharField(max_length=9)
+
+    def __str__(self):
+        return f'{self.pk} | {self.state} | {self.city} | {self.cep}'
 
 class User(AbstractUser):
-    """
-    Default custom user model for NewDVE_Back.
-    If adding fields that need to be filled at user signup,
-    check forms.SignupForm and forms.SocialSignupForms accordingly.
-    """
+    SCHOOLING_CHOICES = [
+        ("NAO_ALFABETIZADO", "Não alfabetizado"),
+        ("EF_INCOMPLETO", "Ensino fundamental incompleto"),
+        ("EF_COMPLETO", "Ensino fundamental completo"),
+        ("CURSANDO_EF", "Cursando ensino fundamental"),
+        ("EM_INCOMPLETO", "Ensino médio incompleto"),
+        ("EM_COMPLETO", "Ensino médio completo"),
+        ("CURSANDO_EM", "Cursando ensino médio"),
+        ("ES_INCOMPLETO", "Ensino superior incompleto"),
+        ("ES_COMPLETO", "Ensino superior completo"),
+        ("CURSANDO_ES", "Cursando ensino superior"),
+        ("MESTRADO", "Mestrado"),
+        ("DOUTORADO", "Doutorado"),
+    ]
+
+    #ALL USERS
+    name = models.CharField(_("Name of User"), blank=True, max_length=255)
+    email = models.EmailField(_("email address"), unique=True)
+    addres = models.ForeignKey(Addres, on_delete=models.SET_NULL, null=True)
+    profile_picture = models.ImageField(upload_to ='profile_pictures/', null=True)
+    description = models.CharField(max_length=1000, null=True)
+    contact_mail = models.EmailField(null=True)
+    phone = models.CharField(max_length=12,null=True)
+    instagram = models.CharField(max_length=20,null=True)
+    linkedin = models.CharField(max_length=50,null=True)
+    twitter = models.CharField(max_length=20,null=True)
+    #CANDIDATE USER
+    ocupattion = models.CharField(max_length=100, null=True)
+    birth_date = models.DateField(null=True)
+    preference_tags = models.ManyToManyField(Tag)
+    portfolio = models.CharField(max_length=200, null=True)
+    schooling = models.CharField(choices=SCHOOLING_CHOICES, null=True, max_length=20)
+    saved_announces = models.ManyToManyField(Announce)
+    #CREATOR USER
+    cnpj = models.CharField(max_length=16,null=True)
 
     # First and last name do not cover name patterns around the globe
-    name = CharField(_("Name of User"), blank=True, max_length=255)
     first_name = None  # type: ignore
     last_name = None  # type: ignore
-    email = EmailField(_("email address"), unique=True)
     username = None  # type: ignore
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
+
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
 
     objects = UserManager()
 
@@ -33,3 +76,10 @@ class User(AbstractUser):
 
         """
         return reverse("users:detail", kwargs={"pk": self.id})
+
+class user_file(models.Model):
+    file = models.FileField(upload_to ='files/')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.pk} | {self.user.name}'
