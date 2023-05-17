@@ -77,7 +77,7 @@ class User(AbstractUser):
         """
         return reverse("users:detail", kwargs={"pk": self.id})
 
-class user_file(models.Model):
+class User_file(models.Model):
     file = models.FileField(upload_to ='files/')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
