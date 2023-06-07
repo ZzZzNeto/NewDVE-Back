@@ -9,7 +9,16 @@ class Tag(models.Model):
     def __str__(self):
         return f'{self.pk} | {self.tag_name}'
 
-class Announce(models.Model):
+class Announcement(models.Model):
+    COURSE_CHOICES = [
+        ("ALIMENTOS", "Alimentos"),
+        ("APICULTURA", "Apicultura"),
+        ("INFORMATICA", "Informatica"),
+        ("ADS", "Analise e desenvolvimento de sistemas"),
+        ("QUIMICA", "Quimica"),
+        ("AGROINDUSTRIA", "Agroindustria"),
+    ]
+
     company_name = models.CharField(max_length=255)
     tags = models.ManyToManyField(Tag)
     schedule = models.CharField(max_length=30) #horario ex: 16h - 22h
@@ -20,23 +29,23 @@ class Announce(models.Model):
     benefits = models.CharField(max_length=500, null=True)
     requeriments = models.CharField(max_length=500, null=True)
     description = models.CharField(max_length=500, null=True)
-    addres = models.ForeignKey("users.Addres", on_delete=models.CASCADE)
+    address = models.ForeignKey("users.Address", on_delete=models.CASCADE)
     curriculum = models.BooleanField()
-    course = models.CharField(max_length=100, null=True)
+    course = models.CharField(choices=COURSE_CHOICES,max_length=100, null=True)
     total_workload = models.CharField(max_length=3, null=True)
-    inscripts = models.ManyToManyField("users.User",related_name="inscripts")
+    inscripts = models.ManyToManyField("users.User",related_name="inscripts", blank=True)
     creator = models.ForeignKey("users.User",related_name="criador", on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.pk} | {self.company_name} | {self.creator.pk}'
     
 
-class Announce_image(models.Model):
+class Announcement_image(models.Model):
     image = models.ImageField(upload_to ='announce_images/')
-    announce = models.ForeignKey(Announce, on_delete=models.CASCADE)
+    announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.pk} | {self.announce.company_name}'
+        return f'{self.pk} | {self.announcement.company_name}'
 
 class Rating(models.Model):
     STARS = [
@@ -48,10 +57,10 @@ class Rating(models.Model):
     ]
 
     rate = models.IntegerField(choices=STARS)
-    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    announce = models.ForeignKey(Announce, on_delete=models.CASCADE)
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, null=True)
+    announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, null=True)
 
-    def __str__(self):
-        return f'{self.pk} | {self.user.name} | {self.announce.pk}'
+    # def __str__(self):
+    #     return f'{self.pk} | {self.user.name}({self.user.id}) | {self.announcement.company_name}({self.announcement.id})'
     
 

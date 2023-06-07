@@ -2,6 +2,7 @@
 Base settings to build other settings files upon.
 """
 from pathlib import Path
+from datetime import timedelta
 
 import environ
 
@@ -285,8 +286,19 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DATE_INPUT_FORMATS': ["%d/%m/%Y", ],
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'SIGNING_KEY': 'F7zbUkdlHIGsWmTxA2wq7uasRN5uZ159SFyCCe0wKvU31dmThvFo8tmJF4RJ1QTjp',
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
@@ -297,8 +309,9 @@ CORS_URLS_REGEX = r"^/api/.*$"
 SPECTACULAR_SETTINGS = {
     "TITLE": "NewDVE_Back API",
     "DESCRIPTION": "Documentation of API endpoints of NewDVE_Back",
+    "SCHEMA_PATH_PREFIX": r"/v[0-9]",
     "VERSION": "1.0.0",
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
 }
 # Your stuff...
 # ------------------------------------------------------------------------------

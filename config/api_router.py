@@ -9,15 +9,22 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
-from newdve_back.users.api.views import UserViewSet
+from newdve_back.announces.api.viewsets import AnnounceViewSet, TagViewSet, Announce_imageViewSet, RatingViewSet
+from newdve_back.users.api.viewsets import UserViewSet, User_fileViewSet, AddresViewSet
 
 if settings.DEBUG:
     router = DefaultRouter()
 else:
     router = SimpleRouter()
 
-router.register("users", UserViewSet)
+router.register("users", UserViewSet, basename='users')
+router.register("user_files", User_fileViewSet, basename='user_files'),
+router.register("addresses", AddresViewSet, basename='addresses')
 
+router.register("announces", AnnounceViewSet, basename='announces')
+router.register("tags", TagViewSet, basename='tags')
+router.register("announce_images", Announce_imageViewSet, basename='announce_images')
+router.register("ratings", RatingViewSet, basename='ratings')
 
 app_name = "api"
 urlpatterns = [
