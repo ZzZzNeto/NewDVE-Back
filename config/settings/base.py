@@ -81,6 +81,8 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "drf_spectacular",
     "rest_framework_simplejwt",
+    'social_django', 
+    'rest_social_auth',
 ]
 
 LOCAL_APPS = [
@@ -100,6 +102,8 @@ MIGRATION_MODULES = {"sites": "newdve_back.contrib.sites.migrations"}
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -315,3 +319,30 @@ SPECTACULAR_SETTINGS = {
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '715801706986-8aj34ol9c4pfnajha512t8f600dl185u.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+SOCIAL_AUTH_FACEBOOK_KEY = '6058202604308184'
+SOCIAL_AUTH_FACEBOOK_SECRET = '8e31e4e72e22106ea6f443455466577c'
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email'] 
+
+REST_SOCIAL_OAUTH_ABSOLUTE_REDIRECT_URI = 'http://localhost:3000/redirect/'
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'users.pipeline.add_groups',
+)
+
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id,name,email,picture', 
+}

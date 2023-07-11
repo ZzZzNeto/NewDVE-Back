@@ -27,13 +27,21 @@ class UserSerializer(serializers.ModelSerializer):
     preference_tags = TagSerializer(many=True, required=False, read_only=True)
     saved_announcements = SimpleAnnouncementSerializer(many=True, required=False, read_only=True)
     address = AddressSerializer(required=False, read_only=True)
-    groups = GroupSerializer(many=True)
+    groups = GroupSerializer(many=True, read_only=True)
     files = serializers.SerializerMethodField('get_files', required=False, read_only=True)
+    access = serializers.SerializerMethodField()
+    refresh = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["groups","name", "email","cnpj", "address", "profile_picture", "description", "contact_mail", "phone", "instagram", "linkedin", 
+        fields = ["groups","name","access","refresh","email","cnpj", "address", "profile_picture", "description", "contact_mail", "phone", "instagram", "linkedin", 
                   "twitter", "ocupattion", "birth_date", "preference_tags", "portfolio", "schooling", "saved_announcements", "registration_ifrn", "course",'files']
+
+    def get_refresh(self,instance):
+        return self.context.get("refresh")
+
+    def get_access(self,instance):
+        return self.context.get("access")
 
     def get_files(self,instance):
         files = User_file.objects.filter(user=instance)

@@ -12,7 +12,7 @@ class Address(models.Model):
     district = models.CharField(max_length=255, blank=True)
     street = models.CharField(max_length=255)
     number = models.CharField(max_length=10, blank=True)
-    cep = models.CharField(max_length=9)
+    cep = models.CharField(max_length=10)
 
     def __str__(self):
         return f'{self.pk} | {self.state} | {self.city} | {self.cep}'
@@ -22,7 +22,7 @@ class User(AbstractUser):
         ("ALIMENTOS", "Alimentos"),
         ("APICULTURA", "Apicultura"),
         ("INFORMATICA", "Informatica"),
-        ("ADS", "Analise e desenvolvimento de sistemas"),
+        ("ADS", "Tecnologia em Análise e Desenvolvimento de Sistemas"),
         ("QUIMICA", "Quimica"),
         ("AGROINDUSTRIA", "Agroindustria"),
     ]
@@ -46,10 +46,10 @@ class User(AbstractUser):
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
     email = models.EmailField(_("email address"), unique=True)
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
-    profile_picture = models.ImageField(upload_to ='profile_pictures/', null=True)
+    profile_picture = models.ImageField(upload_to ='profile_pictures/',  default='user_base.jpg')
     description = models.CharField(max_length=1000, null=True)
     contact_mail = models.EmailField(null=True)
-    phone = models.CharField(max_length=12,null=True)
+    phone = models.CharField(max_length=200,null=True)
     instagram = models.CharField(max_length=20,null=True)
     linkedin = models.CharField(max_length=50,null=True)
     twitter = models.CharField(max_length=20,null=True)
@@ -62,7 +62,7 @@ class User(AbstractUser):
     saved_announcements = models.ManyToManyField(Announcement)
     #IFRN
     registration_ifrn = models.CharField(max_length=14, unique=True, null=True)
-    course = models.CharField(choices=COURSE_CHOICES, null=True, max_length=50)
+    course = models.CharField(choices=COURSE_CHOICES, null=True, max_length=100)
     #CREATOR USER
     cnpj = models.CharField(max_length=16,null=True)
 
