@@ -64,7 +64,7 @@ class SimpleAnnouncementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Announcement
-        fields = ['id','company_name','company_image', 'main_image', 'rate', 'total_rates', 'city', 'tags', 'vacancies']
+        fields = ['id','company_name','company_image', 'main_image', 'rate', 'total_rates', 'city', 'tags', 'vacancies', 'schedule']
 
     def get_city(self, instance):
         return f"{instance.address.city}/{instance.address.state}"
