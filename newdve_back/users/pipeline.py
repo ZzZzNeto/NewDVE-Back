@@ -10,7 +10,8 @@ def add_groups(backend, user, response, *args, **kwargs):
     if not user.name:
         user.name = response['name']
         user.save()
-    if not user.profile_picture:
+    print(response)
+    if user.profile_picture == "user_base.jpg":
         if backend.name == 'facebook':
             with urlopen(response['picture']['data']['url']) as uo:
                 assert uo.status == 200

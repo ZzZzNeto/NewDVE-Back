@@ -5,13 +5,24 @@ from rest_framework.response import Response
 
 from newdve_back.users.models import Address, User
 from newdve_back.announces.models import Announcement, Tag, Announcement_image, Rating
-from newdve_back.announces.api.serializers import AnnouncementSerializer, TagSerializer, Announcement_imageSerializer, RatingSerializer
+from newdve_back.announces.api.serializers import AnnouncementSerializer, TagSerializer, Announcement_imageSerializer, RatingSerializer, SimpleAnnouncementSerializer
 
 class AnnounceViewSet(viewsets.ModelViewSet):
 
     permission_classes = [IsAuthenticated]
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = SimpleAnnouncementSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = SimpleAnnouncementSerializer(queryset, many=True)
+        return Response(serializer.data)
     
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)

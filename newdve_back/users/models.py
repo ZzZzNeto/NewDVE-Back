@@ -11,7 +11,7 @@ class Address(models.Model):
     city = models.CharField(max_length=50)
     district = models.CharField(max_length=255, blank=True)
     street = models.CharField(max_length=255)
-    number = models.CharField(max_length=10, blank=True)
+    number = models.CharField(max_length=10, blank=True, default="S/N")
     cep = models.CharField(max_length=10)
 
     def __str__(self):

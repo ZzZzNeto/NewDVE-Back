@@ -18,6 +18,7 @@ from .cnpj_validation import cnpj_validation
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import UserSerializer, AddressSerializer, User_fileSerializer
 from ..models import Address, User_file
+from newdve_back.announces.models import Tag
 
 User = get_user_model()
 
@@ -38,6 +39,25 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     permission_classes = [AllowAny]
     queryset = User.objects.all()
     lookup_field = "pk"
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if "preference_tags" in request.data:
+            tags = Tag.objects.filter(id__in=request.data['preference_tags'])
+            instance.preference_tags.set(tags)
+            instance.save()
+
+        if 'address' in request.data:
+            address = Address.objects.get(id=request.data['address'])
+            instance.address=address
+            instance.save()
+
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
