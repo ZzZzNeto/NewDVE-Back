@@ -124,3 +124,17 @@ class SimpleAnnouncementSerializer(serializers.ModelSerializer):
     
     def get_total_rates(self, instance):
         return Rating.objects.filter(announcement=instance).count()
+    
+class AnnounceCreateSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField()
+    requeriments = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    benefits = serializers.CharField(required=False)
+    vacancies = serializers.IntegerField()
+    journey = serializers.CharField()
+    schedule = serializers.CharField()
+    deadline = serializers.DateField()
+
+    class Meta:
+        model = Announcement
+        fields = ['company_name', 'requeriments','description','benefits','vacancies','journey','schedule','deadline']

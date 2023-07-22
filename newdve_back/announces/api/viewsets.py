@@ -21,6 +21,7 @@ class AnnounceViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         search = request.query_params.get('search') or False
         tags = request.query_params.get('tags') or False
+        tags = tags.replace(",", "")
         order = request.query_params.get('order') or False
         rentable = request.query_params.get('rentable') or False
 
@@ -31,6 +32,7 @@ class AnnounceViewSet(viewsets.ModelViewSet):
         if search:
             queryset = queryset.filter(company_name__icontains=search)
         if tags:
+
             list_tags = Tag.objects.filter(id__in=tags)
             for tag in list_tags:
                 ids = list(Announcement.objects.filter(tags__id=tag.id).values_list("id",flat=True))
@@ -66,6 +68,14 @@ class AnnounceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
+        print(request.data)
+        subdata = request.data
+
+        address, created = Address.objects.get_or_create(cep=request.data['CEP'],district=request.data['district'],number=request.data['number'],street=request.data['street'],city=request.data['city'],state=request.data['state'])
+        keys = ['CEP','district','number','street','city','state']
+        for key in keys:
+            subdata.pop(key)
+            
         serializer = self.get_serializer(data=request.data)
         address = Address.objects.get(id=serializer.initial_data['address'])
         creator = request.user
@@ -102,6 +112,10 @@ class AnnounceViewSet(viewsets.ModelViewSet):
             announcement.inscripts.add(user)
             return Response({'Action':'subscribed'},status=status.HTTP_200_OK)
 
+    @action(methods=['get'], detail=False, url_path='courses')
+    def courses(self, request, *args, **kwarg):
+        return Response(Announcement.COURSE_CHOICES)
+    
 class TagViewSet(viewsets.ModelViewSet):
 
     permission_classes = [IsAuthenticated]

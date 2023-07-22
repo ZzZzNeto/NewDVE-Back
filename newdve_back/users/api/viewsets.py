@@ -18,10 +18,8 @@ from .cnpj_validation import cnpj_validation
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import UserSerializer, AddressSerializer, User_fileSerializer, UserUpdateSerializer
-from ..models import Address, User_file
+from ..models import Address, User_file, User
 from newdve_back.announces.models import Tag
-
-User = get_user_model()
 
 class AddresViewSet(viewsets.ModelViewSet):
 
@@ -124,6 +122,10 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(methods=['get'], detail=False, url_path='schooling')
+    def courses(self, request, *args, **kwarg):
+        return Response(User.SCHOOLING_CHOICES)
 
     @action(detail=False)
     def me(self, request):
