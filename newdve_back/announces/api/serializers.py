@@ -25,15 +25,24 @@ class AnnouncementSerializer(serializers.ModelSerializer):
     creator = SimpleUserSerializer(read_only=True, required=False)
     inscripts = SimpleUserSerializer(many=True, read_only=True, required=False)
     images = serializers.SerializerMethodField('get_images', required=False)
+    company_image = serializers.SerializerMethodField()
+    total_rates = serializers.SerializerMethodField()
 
     class Meta:
         model = Announcement
         fields = ['company_name','tags','schedule','salary','journey','vacancies','deadline','benefits','requeriments','description','address',
-                  'curriculum','course','total_workload','inscripts','creator','images']
+                  'curriculum','course','total_workload','inscripts','creator','images', 'company_image', 'rate', 'total_rates']
         
     def get_images(self, instance):
         images = Announcement_image.objects.filter(announcement=instance)
         serializer = Announcement_imageSerializer(images, many=True)
+        return serializer.data
+    
+    def get_total_rates(self, instance):
+        return Rating.objects.filter(announcement=instance).count()
+    
+    def get_company_image(self, instance):
+        serializer = CompanySeralizer(instance.creator)
         return serializer.data
 
 class RatingSerializer(serializers.ModelSerializer):

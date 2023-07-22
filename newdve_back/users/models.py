@@ -9,10 +9,10 @@ from newdve_back.users.managers import UserManager
 class Address(models.Model):
     state = models.CharField(max_length=2)
     city = models.CharField(max_length=50)
-    district = models.CharField(max_length=255, blank=True)
-    street = models.CharField(max_length=255)
+    district = models.CharField(max_length=255, blank=True, null=True)
+    street = models.CharField(max_length=255, null=True)
     number = models.CharField(max_length=10, blank=True, default="S/N")
-    cep = models.CharField(max_length=10)
+    cep = models.CharField(max_length=10, null=True)
 
     def __str__(self):
         return f'{self.pk} | {self.state} | {self.city} | {self.cep}'
@@ -58,7 +58,7 @@ class User(AbstractUser):
     birth_date = models.DateField(null=True)
     preference_tags = models.ManyToManyField(Tag)
     portfolio = models.CharField(max_length=200, null=True)
-    schooling = models.CharField(choices=SCHOOLING_CHOICES, null=True, max_length=20)
+    schooling = models.CharField(choices=SCHOOLING_CHOICES, null=True, max_length=50)
     saved_announcements = models.ManyToManyField(Announcement)
     #IFRN
     registration_ifrn = models.CharField(max_length=14, unique=True, null=True)

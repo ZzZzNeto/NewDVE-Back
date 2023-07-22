@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_social_auth.views import SocialSessionAuthView
@@ -16,7 +17,7 @@ from rest_framework.viewsets import GenericViewSet
 from .cnpj_validation import cnpj_validation
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import UserSerializer, AddressSerializer, User_fileSerializer
+from .serializers import UserSerializer, AddressSerializer, User_fileSerializer, UserUpdateSerializer
 from ..models import Address, User_file
 from newdve_back.announces.models import Tag
 
@@ -41,22 +42,59 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     lookup_field = "pk"
 
     def update(self, request, *args, **kwargs):
+        print(request.data)
+        subdata = {}
+        for data in request.data:
+            if request.data[data] != None:
+                subdata[data] = request.data[data]
+
+        files = []
+        cnt = 0
+        for key in request.data:
+            if key.startswith(f"files[{cnt}]"):
+                if key == f"files[{cnt}][id]":
+                    files.append(User_file.objects.get(id=request.data[f"files[{cnt}][id]"]))
+                    cnt += 1
+                else:
+                    pass
+            if key == f"files[{cnt}]":
+                files.append(request.data[f"files[{cnt}]"])
+                cnt += 1
+            if key == "files[]":
+                files.append(request.data[f"files[]"])
+
+        address, created = Address.objects.get_or_create(cep=request.data['CEP'],district=request.data['district'],number=request.data['number'],street=request.data['street'],city=request.data['city'],state=request.data['state'])
+        keys = ['CEP','district','number','street','city','state']
+        for key in keys:
+            subdata.pop(key)
+
+        subdata['address'] = address.id
+        data_obj = datetime.strptime(subdata['birth_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        data_formatada = data_obj.strftime('%d/%m/%Y')
+        subdata['birth_date'] = data_formatada
+
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = UserUpdateSerializer(instance, data=subdata, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        if "preference_tags" in request.data:
-            tags = Tag.objects.filter(id__in=request.data['preference_tags'])
+        if "tags[]" in request.data:
+            tags = Tag.objects.filter(id__in=request.data.getlist('tags[]'))
             instance.preference_tags.set(tags)
             instance.save()
+        
+        userFiles = User_file.objects.filter(user=request.user)
+        for file in userFiles:
+            if file not in files:
+                file.delete()
+        for file in files:
+            if file not in userFiles:
+                User_file.objects.create(user=request.user, file=file)
 
-        if 'address' in request.data:
-            address = Address.objects.get(id=request.data['address'])
-            instance.address=address
-            instance.save()
-
+        refresh = RefreshToken.for_user(request.user)
+            
+        serializer = UserSerializer(request.user, context={'refresh' : str(refresh), 'access': str(refresh.access_token)})
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):

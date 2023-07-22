@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 # Create your models here.
 
@@ -35,6 +36,8 @@ class Announcement(models.Model):
     total_workload = models.CharField(max_length=3, null=True)
     inscripts = models.ManyToManyField("users.User",related_name="inscripts", blank=True)
     creator = models.ForeignKey("users.User",related_name="criador", on_delete=models.CASCADE)
+    creation_time = models.DateTimeField(verbose_name='Data de criação', default=timezone.now)
+    rate = models.FloatField(default=0)
 
     def __str__(self):
         return f'{self.pk} | {self.company_name} | {self.creator.pk}'

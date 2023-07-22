@@ -13,8 +13,30 @@ class AnnounceViewSet(viewsets.ModelViewSet):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        search = request.query_params.get('search') or False
+        tags = request.query_params.get('tags') or False
+        order = request.query_params.get('order') or False
+        rentable = request.query_params.get('rentable') or False
+
+        if order:
+            queryset = Announcement.objects.all().order_by(f"-{order}")
+        else:
+            queryset = Announcement.objects.all()
+        if search:
+            queryset = queryset.filter(company_name__icontains=search)
+        if tags:
+            list_tags = Tag.objects.filter(id__in=tags)
+            for tag in list_tags:
+                ids = list(Announcement.objects.filter(tags__id=tag.id).values_list("id",flat=True))
+                queryset = queryset.filter(id__in=ids)
+        if rentable:
+            queryset = queryset.filter(salary__gt=0)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -107,6 +129,15 @@ class RatingViewSet(viewsets.ModelViewSet):
         announce = Announcement.objects.get(id=request.data['announcement'])
         rate.announcement = announce
         rate.save()
+
+        rates = Rating.objects.filter(announcement=announce).values_list("rate",flat=True)
+        total = 0
+        for rating in rates:
+            total += rating
+        announce.rate = total/rates.count()
+        announce.save()
+
+        print(rate)
         serializer = RatingSerializer(rate)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

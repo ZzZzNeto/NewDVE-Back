@@ -62,3 +62,22 @@ class UserSerializer(serializers.ModelSerializer):
         files = User_file.objects.filter(user=instance)
         serializer = User_fileSerializer(files,many=True)
         return serializer.data
+    
+class UserUpdateSerializer(serializers.ModelSerializer):
+    cnpj = serializers.CharField(required=False)
+    profile_picture = serializers.ImageField(required=False) 
+    description = serializers.CharField(required=False)
+    contact_mail = serializers.EmailField(required=False)
+    phone = serializers.IntegerField(required=False)
+    instagram = serializers.CharField(required=False)
+    linkedin = serializers.CharField(required=False)
+    twitter = serializers.CharField(required=False)
+    ocupattion = serializers.CharField(required=False)
+    birth_date = serializers.DateField(required=False)
+    portfolio = serializers.CharField(required=False)
+    schooling = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = ["name","cnpj", "address", "profile_picture", "description", "contact_mail", "phone", "instagram", "linkedin",
+                  "twitter", "ocupattion", "birth_date", "portfolio", "schooling"]
