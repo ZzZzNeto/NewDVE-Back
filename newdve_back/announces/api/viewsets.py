@@ -21,7 +21,7 @@ class AnnounceViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         search = request.query_params.get('search') or False
         tags = request.query_params.get('tags') or False
-        tags = tags.replace(",", "")
+        tags = str(tags.replace(",", ""))
         order = request.query_params.get('order') or False
         rentable = request.query_params.get('rentable') or False
 
