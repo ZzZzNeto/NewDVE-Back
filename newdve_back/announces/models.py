@@ -52,7 +52,7 @@ class Announcement_image(models.Model):
 
 class Rating(models.Model):
 
-    rate = models.BooleanField()
+    rate = models.FloatField()
     user = models.ForeignKey("users.User", on_delete=models.CASCADE, null=True)
     announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, null=True)
 

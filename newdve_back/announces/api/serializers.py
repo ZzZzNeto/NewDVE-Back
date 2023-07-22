@@ -137,4 +137,4 @@ class AnnounceCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Announcement
-        fields = ['company_name', 'requeriments','description','benefits','vacancies','journey','schedule','deadline']
+        fields = ['company_name', 'requeriments','description','benefits','vacancies','journey','schedule','deadline','tags']

@@ -81,8 +81,10 @@ class AnnounceViewSet(viewsets.ModelViewSet):
         data_formatada = data_obj.strftime('%d/%m/%Y')
         subdata['birth_date'] = data_formatada
 
+        
+
         if "tags[]" in request.data:
-            tags = Tag.objects.filter(id__in=request.data.getlist('tags[]'))
+            tags = Tag.objects.filter(Q(id__in=request.data.getlist('tags[]'))|Q(tag_name='Novo'))
         else: 
             tags = Tag.objects.filter(tag_name='Novo')
 
