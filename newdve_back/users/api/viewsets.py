@@ -61,7 +61,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
             if key == "files[]":
                 files.append(request.data[f"files[]"])
 
-        address, created = Address.objects.get_or_create(cep=request.data['CEP'],district=request.data['district'],number=request.data['number'],street=request.data['street'],city=request.data['city'],state=request.data['state'])
+        address, created = Address.objects.get_or_create(cep=request.data['cep'],district=request.data['district'],number=request.data['number'],street=request.data['street'],city=request.data['city'],state=request.data['state'])
         keys = ['CEP','district','number','street','city','state']
         for key in keys:
             subdata.pop(key)

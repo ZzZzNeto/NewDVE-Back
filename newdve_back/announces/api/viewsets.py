@@ -77,11 +77,9 @@ class AnnounceViewSet(viewsets.ModelViewSet):
             subdata.pop(key)
             
         subdata['address'] = address.id
-        data_obj = datetime.strptime(subdata['birth_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        data_obj = datetime.strptime(subdata['deadline'], '%Y-%m-%dT%H:%M:%S.%fZ')
         data_formatada = data_obj.strftime('%d/%m/%Y')
-        subdata['birth_date'] = data_formatada
-
-        
+        subdata['deadline'] = data_formatada
 
         if "tags[]" in request.data:
             tags = Tag.objects.filter(Q(id__in=request.data.getlist('tags[]'))|Q(tag_name='Novo'))
@@ -95,6 +93,13 @@ class AnnounceViewSet(viewsets.ModelViewSet):
         serializer.validated_data['creator'] = creator
         serializer.validated_data['tags'] = tags
         self.perform_create(serializer)
+
+
+        announce = Announcement.objects.filter(creator=request.user).last()
+        for image in request.data['images[]']:
+            print(image)
+            Announcement_image.objects.create(image=image, announcement=announce)
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
