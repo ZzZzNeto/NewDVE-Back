@@ -1,8 +1,9 @@
+from datetime import datetime
 from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from django.db.models import Q
 from newdve_back.users.models import Address, User
 from newdve_back.announces.models import Announcement, Tag, Announcement_image, Rating
 from newdve_back.announces.api.serializers import AnnouncementSerializer, TagSerializer, Announcement_imageSerializer, RatingSerializer, SimpleAnnouncementSerializer
@@ -21,7 +22,6 @@ class AnnounceViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         search = request.query_params.get('search') or False
         tags = request.query_params.get('tags') or False
-        tags = str(tags.replace(",", ""))
         order = request.query_params.get('order') or False
         rentable = request.query_params.get('rentable') or False
 
@@ -32,7 +32,7 @@ class AnnounceViewSet(viewsets.ModelViewSet):
         if search:
             queryset = queryset.filter(company_name__icontains=search)
         if tags:
-
+            tags = str(tags.replace(",", ""))
             list_tags = Tag.objects.filter(id__in=tags)
             for tag in list_tags:
                 ids = list(Announcement.objects.filter(tags__id=tag.id).values_list("id",flat=True))
@@ -76,10 +76,18 @@ class AnnounceViewSet(viewsets.ModelViewSet):
         for key in keys:
             subdata.pop(key)
             
+        subdata['address'] = address.id
+        data_obj = datetime.strptime(subdata['birth_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        data_formatada = data_obj.strftime('%d/%m/%Y')
+        subdata['birth_date'] = data_formatada
+
+        if "tags[]" in request.data:
+            tags = Tag.objects.filter(id__in=request.data.getlist('tags[]'))
+        else: 
+            tags = Tag.objects.filter(tag_name='Novo')
+
         serializer = self.get_serializer(data=request.data)
-        address = Address.objects.get(id=serializer.initial_data['address'])
         creator = request.user
-        tags = Tag.objects.filter(id__in=serializer.initial_data['tags'])
         serializer.is_valid(raise_exception=True)
         serializer.validated_data['address'] = address
         serializer.validated_data['creator'] = creator

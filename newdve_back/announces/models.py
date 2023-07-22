@@ -51,15 +51,8 @@ class Announcement_image(models.Model):
         return f'{self.pk} | {self.announcement.company_name}'
 
 class Rating(models.Model):
-    STARS = [
-        (1, "One"),
-        (2, "Two"),
-        (3, "Three"),
-        (4, "Four"),
-        (5, "Five"),
-    ]
 
-    rate = models.IntegerField(choices=STARS)
+    rate = models.BooleanField()
     user = models.ForeignKey("users.User", on_delete=models.CASCADE, null=True)
     announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, null=True)
 
