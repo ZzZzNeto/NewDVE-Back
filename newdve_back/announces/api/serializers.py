@@ -27,11 +27,14 @@ class AnnouncementSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField('get_images', required=False)
     company_image = serializers.SerializerMethodField()
     total_rates = serializers.SerializerMethodField()
+    inscript = serializers.SerializerMethodField()
+    favorite = serializers.SerializerMethodField()
+    rated = serializers.SerializerMethodField()
 
     class Meta:
         model = Announcement
         fields = ['company_name','tags','schedule','salary','journey','vacancies','deadline','benefits','requeriments','description','address',
-                  'curriculum','course','total_workload','inscripts','creator','images', 'company_image', 'rate', 'total_rates']
+                  'curriculum','course','total_workload','inscripts','creator','images', 'company_image', 'rate', 'total_rates','inscript','favorite','rated']
         
     def get_images(self, instance):
         images = Announcement_image.objects.filter(announcement=instance)
@@ -44,6 +47,25 @@ class AnnouncementSerializer(serializers.ModelSerializer):
     def get_company_image(self, instance):
         serializer = CompanySeralizer(instance.creator)
         return serializer.data
+    
+    def get_favorite(self, instance):
+        if instance in self.context['request'].user.saved_announcements.all():
+            return True
+        else:
+            return False
+        
+    def get_inscript(self, instance):
+        if self.context['request'].user in instance.inscripts.all():
+            return True
+        else:
+            return False
+        
+    def get_rated(self, instance): 
+        try:
+            rate = Rating.objects.get(user=self.context['request'].user,announcement=instance)
+            return rate.rate
+        except Rating.DoesNotExist:
+            return False
 
 class RatingSerializer(serializers.ModelSerializer):
     user = SimpleUserSerializer(required=False, read_only=True)

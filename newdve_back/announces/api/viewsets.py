@@ -121,12 +121,17 @@ class RatingViewSet(viewsets.ModelViewSet):
     serializer_class = RatingSerializer
 
     def create(self, request, *args, **kwargs):
+        announce = Announcement.objects.get(id=request.data['announcement'])
+        try:
+            Rating.objects.get(user=request.user, announcement = announce).delete()
+        except Rating.DoesNotExist:
+            pass
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         rate = Rating.objects.all().latest('id')
         rate.user = self.request.user
-        announce = Announcement.objects.get(id=request.data['announcement'])
         rate.announcement = announce
         rate.save()
 
