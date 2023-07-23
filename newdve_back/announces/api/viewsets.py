@@ -1,12 +1,13 @@
 from datetime import datetime
 from rest_framework import viewsets, status
+from django.core.files.base import ContentFile
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Q
 from newdve_back.users.models import Address, User
 from newdve_back.announces.models import Announcement, Tag, Announcement_image, Rating
-from newdve_back.announces.api.serializers import AnnouncementSerializer, TagSerializer, Announcement_imageSerializer, RatingSerializer, SimpleAnnouncementSerializer
+from newdve_back.announces.api.serializers import AnnouncementSerializer, TagSerializer, Announcement_imageSerializer, RatingSerializer, SimpleAnnouncementSerializer, AnnounceCreateSerializer
 
 class AnnounceViewSet(viewsets.ModelViewSet):
 
@@ -49,21 +50,56 @@ class AnnounceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     def update(self, request, *args, **kwargs):
+        print(request.data)
+        subdata = {}
+        for data in request.data:
+            if request.data[data] != None:
+                subdata[data] = request.data[data]
+
+        images = []
+        cnt = 0
+        for key in request.data:
+            if key.startswith(f"images[{cnt}]"):
+                if key == f"images[{cnt}][id]":
+                    images.append(Announcement_image.objects.get(id=request.data[f"images[{cnt}][id]"]))
+                    cnt += 1
+                else:
+                    pass
+            if key == f"images[{cnt}]":
+                images.append(request.data[f"images[{cnt}]"])
+                cnt += 1
+            if key == "images[]":
+                images.append(request.data[f"images[]"])
+        print(images)
+
+        address, created = Address.objects.get_or_create(cep=request.data['CEP'],district=request.data['district'],number=request.data['number'],street=request.data['street'],city=request.data['city'],state=request.data['state'])
+        keys = ['CEP','district','number','street','city','state']
+        for key in keys:
+            subdata.pop(key)
+            
+        subdata['address'] = address.id
+        data_obj = datetime.strptime(subdata['deadline'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        data_formatada = data_obj.strftime('%d/%m/%Y')
+        subdata['deadline'] = data_formatada
+
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-
-        if 'tags' in request.data:
-            queryset = Tag.objects.filter(id__in=request.data['tags'])
-            instance.tags.set(queryset)
-
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = AnnounceCreateSerializer(instance, data=subdata, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
+        if "tags[]" in request.data:
+            tags = Tag.objects.filter(id__in=request.data.getlist('tags[]'))
+            instance.tags.set(tags)
+            instance.save()
+
+        announceImages = Announcement_image.objects.filter(announcement=instance)
+        for image in announceImages:
+            if image not in images:
+                image.delete()
+        for image in images:
+            if image not in announceImages:
+                Announcement_image.objects.create(announcement=instance, image=image)
 
         return Response(serializer.data)
 
@@ -94,11 +130,9 @@ class AnnounceViewSet(viewsets.ModelViewSet):
         serializer.validated_data['tags'] = tags
         self.perform_create(serializer)
 
-
         announce = Announcement.objects.filter(creator=request.user).last()
-        for image in request.data['images[]']:
-            print(image)
-            Announcement_image.objects.create(image=image, announcement=announce)
+        for image in request.data.getlist('images[]'):
+            Announcement_image.objects.create(announcement=announce, image=image)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

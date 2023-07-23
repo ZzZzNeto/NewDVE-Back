@@ -134,7 +134,10 @@ class AnnounceCreateSerializer(serializers.ModelSerializer):
     journey = serializers.CharField()
     schedule = serializers.CharField()
     deadline = serializers.DateField()
+    course = serializers.CharField()
+    total_workload = serializers.CharField()
+    curriculum = serializers.BooleanField()
 
     class Meta:
         model = Announcement
-        fields = ['company_name', 'requeriments','description','benefits','vacancies','journey','schedule','deadline','tags']
+        fields = ['company_name', 'requeriments','description','benefits','vacancies','journey','schedule','deadline','tags','course','total_workload','curriculum']
