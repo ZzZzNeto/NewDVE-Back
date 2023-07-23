@@ -124,7 +124,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(methods=['get'], detail=False, url_path='schooling')
-    def courses(self, request, *args, **kwarg):
+    def schoolings(self, request, *args, **kwarg):
         return Response(User.SCHOOLING_CHOICES)
 
     @action(detail=False)

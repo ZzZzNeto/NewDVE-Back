@@ -10,7 +10,7 @@ class Tag(models.Model):
     def __str__(self):
         return f'{self.pk} | {self.tag_name}'
 
-class Announcement(models.Model):
+class Announcement(models.Model): 
     COURSE_CHOICES = [
         ("ALIMENTOS", "Alimentos"),
         ("APICULTURA", "Apicultura"),
