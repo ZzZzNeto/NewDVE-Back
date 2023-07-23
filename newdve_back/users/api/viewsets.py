@@ -67,9 +67,10 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
             subdata.pop(key)
 
         subdata['address'] = address.id
-        data_obj = datetime.strptime(subdata['birth_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        data_formatada = data_obj.strftime('%d/%m/%Y')
-        subdata['birth_date'] = data_formatada
+        if 'birth_date' in subdata:
+            data_obj = datetime.strptime(subdata['birth_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            data_formatada = data_obj.strftime('%d/%m/%Y')
+            subdata['birth_date'] = data_formatada
 
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
