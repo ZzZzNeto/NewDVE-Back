@@ -1,7 +1,7 @@
 from datetime import datetime
 from rest_framework import viewsets, status
 from django.core.files.base import ContentFile
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Q
@@ -11,7 +11,7 @@ from newdve_back.announces.api.serializers import AnnouncementSerializer, TagSer
 
 class AnnounceViewSet(viewsets.ModelViewSet):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
 
@@ -41,8 +41,12 @@ class AnnounceViewSet(viewsets.ModelViewSet):
         if rentable:
             queryset = queryset.filter(salary__gt=0)
 
+        if request.user.groups.filter(name="Company").count() != 1:
+            now = datetime.now()
+            queryset = queryset.filter(deadline__gt=now)
+
         page = self.paginate_queryset(queryset)
-        if page is not None:
+        if page is not None: 
             serializer = SimpleAnnouncementSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 

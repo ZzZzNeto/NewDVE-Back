@@ -10,7 +10,7 @@ class AddressSerializer(serializers.ModelSerializer):
 class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','email','name']
+        fields = ['id','email','name','profile_picture']
     
 class SimpleAnnouncementSerializer(serializers.ModelSerializer):
     class Meta:

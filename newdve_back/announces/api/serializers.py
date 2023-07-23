@@ -1,3 +1,4 @@
+import datetime
 from rest_framework import serializers
 from newdve_back.users.models import User
 from newdve_back.announces.api.imported_serializers import AddressSerializer, SimpleUserSerializer, SimpleAnnouncementSerializer
@@ -92,10 +93,11 @@ class SimpleAnnouncementSerializer(serializers.ModelSerializer):
     main_image = serializers.SerializerMethodField()
     rate = serializers.SerializerMethodField()
     total_rates = serializers.SerializerMethodField()
+    expired = serializers.SerializerMethodField()
 
     class Meta:
         model = Announcement
-        fields = ['id','company_name','company_image', 'main_image', 'rate', 'total_rates', 'city', 'tags', 'vacancies', 'schedule']
+        fields = ['id','company_name','company_image', 'main_image', 'rate', 'total_rates', 'city', 'tags', 'vacancies', 'schedule','expired']
 
     def get_city(self, instance):
         return f"{instance.address.city}/{instance.address.state}"
@@ -110,8 +112,14 @@ class SimpleAnnouncementSerializer(serializers.ModelSerializer):
             return ImageSeralizer(image).data
         else: 
             return None
+        
+    def get_expired(self, instance):
+        now = datetime.datetime.now()
+        if instance.deadline < now.date():
+            return True
+        else:
+            return False
 
-    
     def get_rate(self, instance): 
         rates = Rating.objects.filter(announcement=instance)
         total = 0
