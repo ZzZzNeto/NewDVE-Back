@@ -19,6 +19,7 @@ from .cnpj_validation import cnpj_validation
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import UserSerializer, AddressSerializer, User_fileSerializer, UserUpdateSerializer
 from ..models import Address, User_file, User
+from newdve_back.announces.models import Announcement
 from newdve_back.announces.models import Tag
 
 class AddresViewSet(viewsets.ModelViewSet):
@@ -60,7 +61,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
                 cnt += 1
             if key == "files[]":
                 files.append(request.data[f"files[]"])
-
+        
         address, created = Address.objects.get_or_create(cep=request.data['cep'],district=request.data['district'],number=request.data['number'],street=request.data['street'],city=request.data['city'],state=request.data['state'])
         keys = ['cep','district','number','street','city','state']
         for key in keys:
@@ -91,9 +92,11 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
             if file not in userFiles:
                 User_file.objects.create(user=request.user, file=file)
 
-        refresh = RefreshToken.for_user(request.user)
+        
+        user = User.objects.get(id=request.user.id)
+        refresh = RefreshToken.for_user(user)
             
-        serializer = UserSerializer(request.user, context={'refresh' : str(refresh), 'access': str(refresh.access_token)})
+        serializer = UserSerializer(user, context={'refresh' : str(refresh), 'access': str(refresh.access_token), "request": request})
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
@@ -124,6 +127,15 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    @action(methods=['get'], detail=True, url_path='inscripts')
+    def inscripts(self, request, *args, **kwarg):
+        user = self.get_object()
+        announces = Announcement.objects.filter(creator=user)
+        total = 0
+        for a in announces:
+            total += a.inscripts.all().count()
+        return Response(total, status=status.HTTP_200_OK)
+
     @action(methods=['get'], detail=False, url_path='schooling')
     def schoolings(self, request, *args, **kwarg):
         return Response(User.SCHOOLING_CHOICES)
@@ -140,7 +152,7 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
             suap_student = User.objects.get(registration_ifrn=user["matricula"])
             refresh = RefreshToken.for_user(suap_student)
             
-            serializer = UserSerializer(suap_student, context={'refresh' : str(refresh), 'access': str(refresh.access_token)})
+            serializer = UserSerializer(suap_student, context={'refresh' : str(refresh), 'access': str(refresh.access_token), 'request' : request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             User.objects.create(
@@ -166,5 +178,5 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
 
             refresh = RefreshToken.for_user(student)
 
-            serializer = UserSerializer(student, context={'refresh' : str(refresh), 'access': str(refresh.access_token)})
+            serializer = UserSerializer(student, context={'refresh' : str(refresh), 'access': str(refresh.access_token), 'request' : request})
             return Response(serializer.data, status=status.HTTP_200_OK)

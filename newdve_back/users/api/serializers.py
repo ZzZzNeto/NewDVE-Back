@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.contrib.auth.models import Group
@@ -48,7 +49,12 @@ class UserSerializer(serializers.ModelSerializer):
         return instance.groups.all().first().name
 
     def get_inscriptions(self, instance):
-        announcements = Announcement.objects.filter(inscripts__id=instance.id)
+        print(self.context.get('request'))
+        if self.context.get('request').user.groups.filter(name="Company").count() != 1:
+            now = datetime.datetime.now()
+            announcements = Announcement.objects.filter(inscripts__id=instance.id,deadline__gt=now)
+        else:
+            announcements = Announcement.objects.filter(inscripts__id=instance.id)
         serializer = SimpleAnnouncementSerializer(announcements, many=True)
         return serializer.data
 
