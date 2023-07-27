@@ -2,6 +2,7 @@
 Base settings to build other settings files upon.
 """
 from pathlib import Path
+from datetime import timedelta
 
 import environ
 
@@ -79,10 +80,14 @@ THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",
+    "rest_framework_simplejwt",
+    'social_django', 
+    'rest_social_auth',
 ]
 
 LOCAL_APPS = [
     "newdve_back.users",
+    "newdve_back.announces"
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -97,6 +102,8 @@ MIGRATION_MODULES = {"sites": "newdve_back.contrib.sites.migrations"}
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -281,10 +288,22 @@ SOCIALACCOUNT_FORMS = {"signup": "newdve_back.users.forms.UserSocialSignupForm"}
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DATE_INPUT_FORMATS': ["%d/%m/%Y", ],
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    "PAGE_SIZE": 2,
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'SIGNING_KEY': 'F7zbUkdlHIGsWmTxA2wq7uasRN5uZ159SFyCCe0wKvU31dmThvFo8tmJF4RJ1QTjp',
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
@@ -295,8 +314,36 @@ CORS_URLS_REGEX = r"^/api/.*$"
 SPECTACULAR_SETTINGS = {
     "TITLE": "NewDVE_Back API",
     "DESCRIPTION": "Documentation of API endpoints of NewDVE_Back",
+    "SCHEMA_PATH_PREFIX": r"/v[0-9]",
     "VERSION": "1.0.0",
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '715801706986-8aj34ol9c4pfnajha512t8f600dl185u.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+SOCIAL_AUTH_FACEBOOK_KEY = '6058202604308184'
+SOCIAL_AUTH_FACEBOOK_SECRET = '8e31e4e72e22106ea6f443455466577c'
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email'] 
+
+REST_SOCIAL_OAUTH_ABSOLUTE_REDIRECT_URI = 'http://localhost:3000/redirect/'
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'users.pipeline.add_groups',
+)
+
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id,name,email,picture', 
+}

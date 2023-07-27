@@ -1,7 +1,7 @@
 import pytest
 from rest_framework.test import APIRequestFactory
 
-from newdve_back.users.api.views import UserViewSet
+from newdve_back.users.api.viewsets import UserViewSet
 from newdve_back.users.models import User
 
 
