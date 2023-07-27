@@ -33,7 +33,8 @@ Jose Neto & [Breno Soares](https://github.com/ZBreno)
 ## Tecnologias utilizadas
 
 - Django Rest Framework
-
+- CookieCutter
+  
 ## Instalação
 
 Após clonar o repositório e criar um ambiente virtual, basta executar o comando abaixo para instalar as dependências do projeto.
